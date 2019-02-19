@@ -2,6 +2,7 @@ package com.arkell.api.admin
 
 import com.arkell.entity.UserEntity
 import com.arkell.entity.geo.GeoPoint
+import com.arkell.entity.geo.ObjectLocation
 import com.arkell.entity.geo.Place
 import com.arkell.entity.interaction.MailSubscription
 import com.arkell.model.*
@@ -109,10 +110,115 @@ class AdminImportAPI(
 								if (it[6].trim().isNotBlank()) {
 									logo = it[6]
 								}
-							} catch (e: Exception) {}
+							} catch (e: Exception) {
+							}
 						}.also {
 							repo.save(it)
 						}
+						ctr.incrementAndGet()
+					}
+				}
+		)
+
+		return "Job started"
+	}
+
+	/**
+	 * Import places from XLSX file.
+	 * Rows:
+	 * 0 - partner id
+	 * 1 - place id
+	 *
+	 * not very necessary:
+	 *
+	 * 2 - streetName
+	 * 3 - streetType
+	 * 4 - building
+	 * 5 - buildingSection
+	 * 6 - territory
+	 * 7 - postCode
+	 * 8 - district
+	 * 9 - comment
+	 * 10 - work hours
+	 * 11 - address string
+	 * 12 - contact info
+	 *
+	 * optionals:
+	 *
+	 * 13, 14 - x, y geo coords
+	 * 15 - marker on map -- is it used anywhere?
+	 *
+	 */
+	@PostMapping("/start/objectlocation")
+	fun startObjectLocationImport(request: HttpServletRequest): String {
+		val file = fileModel.uploadToTempStorage(request.getPart("file"))
+		val sheet = SheetsModelProxy(file).getSheet(0)
+
+		val places = geoModel.placeOps
+
+		val ctr = AtomicInteger(0)
+
+		jobs["cities"] = UpdateJob(
+				ctr = ctr,
+				size = sheet.size,
+				task = launch {
+
+					fun String.nullIfEmpty(): String? {
+						return if (this.isBlank()) {
+							null
+						} else {
+							this
+						}
+					}
+
+
+					sheet.map { list ->
+						if (list.size < 15) {
+							val ret = list.toMutableList()
+							while (ret.size < 15) {
+								ret.add("")
+							}
+							return@map ret
+						} else {
+							list
+						}
+					}.forEach {
+						try {
+							val partner = partnerModel.getById(it[0])
+
+							launch {
+								val place = places.getById(it[1])
+
+								val x = it[13].toDoubleOrNull()
+								val y = it[14].toDoubleOrNull()
+
+								val point = x?.let { GeoPoint(x, y!!) }
+
+								ObjectLocation(place, point ?: place.point).apply {
+									setPartner(partner)
+
+									streetName = it[2].nullIfEmpty()
+									streetType = it[3].nullIfEmpty()
+									building = it[4].nullIfEmpty()
+									buildingSection = it[5].nullIfEmpty()
+									territory = it[6].nullIfEmpty()
+									postCode = it[7].nullIfEmpty()
+									district = it[8].nullIfEmpty()
+									comment = it[9].nullIfEmpty()
+									workHours = it[10].nullIfEmpty()
+									addressString = it[11].nullIfEmpty()
+									contactInfo = it[12].nullIfEmpty()
+
+									it[15].nullIfEmpty()?.let {
+										marker = it
+									}
+
+									geoModel.objectLocationOps.save(this)
+								}
+							}
+						} catch (e: Exception) {
+						}
+
 						ctr.incrementAndGet()
 					}
 				}
@@ -197,3 +303,4 @@ class AdminImportAPI(
 	}
 
 }
+
