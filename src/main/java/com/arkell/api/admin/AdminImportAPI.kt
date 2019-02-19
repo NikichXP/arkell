@@ -1,6 +1,8 @@
 package com.arkell.api.admin
 
 import com.arkell.entity.UserEntity
+import com.arkell.entity.geo.GeoPoint
+import com.arkell.entity.geo.Place
 import com.arkell.entity.interaction.MailSubscription
 import com.arkell.model.*
 import com.arkell.model.file.FileModel
@@ -59,6 +61,57 @@ class AdminImportAPI(
 							}
 						}.also {
 							mailSubscriptionRepo.save(it)
+						}
+						ctr.incrementAndGet()
+					}
+				}
+		)
+
+		return "Job started"
+	}
+
+	/**
+	 * Import places from XLSX file.
+	 * Rows:
+	 * 0 - id
+	 * 1 - name
+	 * 2 - city id
+	 * 3, 4 - x, y geo coords
+	 *
+	 * optionals:
+	 * 5 - type (default is 'metro') -- only if not empty
+	 * 6 - logo
+	 */
+	@PostMapping("/start/places")
+	fun startPlaces(request: HttpServletRequest): String {
+		val file = fileModel.uploadToTempStorage(request.getPart("file"))
+		val sheet = SheetsModelProxy(file).getSheet(0)
+
+		val cities = geoModel.cityOps.repository.findAll()
+
+		val repo = geoModel.placeOps.repository
+
+		val ctr = AtomicInteger(0)
+
+		jobs["cities"] = UpdateJob(
+				ctr = ctr,
+				size = sheet.size,
+				task = launch {
+					sheet.forEach {
+						Place(name = it[1], parentCity = cities.find { city -> city.id == it[2] }!!,
+								point = GeoPoint(it[3].toDouble(), it[4].toDouble())).apply {
+							id = it[0]
+
+							try {
+								if (it[5].trim().isNotBlank()) {
+									type = it[5]
+								}
+								if (it[6].trim().isNotBlank()) {
+									logo = it[6]
+								}
+							} catch (e: Exception) {}
+						}.also {
+							repo.save(it)
 						}
 						ctr.incrementAndGet()
 					}
