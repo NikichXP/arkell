@@ -89,6 +89,11 @@ class GeoAPI(
 				cityId = cityId, regionId = regionId, title = title, showHidden = showHidden ?: false)
 	}
 
+	@GetMapping("/place/closest")
+	fun closestPlace(@RequestParam x: Double, @RequestParam y: Double): Place {
+		return geoModel.placeOps.findClosest(x, y)
+	}
+
 	@GetMapping("/mall/{id}")
 	fun mallById(@PathVariable id: String): Mall = geoModel.mallOps.getById(id)
 
