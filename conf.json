@@ -1,0 +1,22 @@
+{
+  "filestore": "aws:s3",
+  "s3": {
+    "server": "https://s3-eu-west-1.amazonaws.com/",
+    "bucket": "arkell",
+    "accessKey": "AKIAISIYOCTXF5XTYYYA",
+    "secretKey": "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"
+  },
+  "db": {
+    "url": "jdbc:postgresql://ec2-54-228-251-254.eu-west-1.compute.amazonaws.com:5432/dci40qk1br10d?sslmode=require",
+    "user": "fzrldczaamlsqj",
+    "pass": "1b9d64da09eb7b62756c1c43e0a14544895dca3a9183768291e52123b1ea079c",
+    "maxPoolSize": 5
+  },
+  "mail": {
+    "address": "sdv@defa.ru",
+    "pass": "sdv345",
+    "server": "smtp.mail.ru",
+    "port": 25,
+    "tls": true
+  }
+}
