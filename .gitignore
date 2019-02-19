@@ -1,0 +1,29 @@
+target/
+.env
+.idea/
+*.iml
+
+target/*
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# Eclipse #
+.settings/
+.classpath
+.project
+
+war/WEB-INF/appengine-generated/
+war/WEB-INF/classes/
+war/WEB-INF/lib/
+
+*\.idea\*
+/.editorconfig
+
+# Docs #
+src/main/resources/static/docs/*
