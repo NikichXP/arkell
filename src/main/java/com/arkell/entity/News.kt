@@ -39,6 +39,9 @@ data class News(var title: String,
 	var regionId: String? = null
 	var cityId: String? = null
 
+	@ElementCollection
+	var citiesIds = ArrayList<String>()
+
 	var onlyClient: Boolean? = false
 	var featured: Boolean? = false
 

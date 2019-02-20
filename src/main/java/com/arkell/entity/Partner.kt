@@ -36,6 +36,8 @@ class Partner(var title: String,
 
 	@ManyToOne
 	var city: City? = null
+	@ManyToMany
+	var cities = ArrayList<City>()
 
 	@Column(columnDefinition = "TEXT")
 	var about: String? = null

@@ -20,41 +20,33 @@ class BannerModel(
 		override val repository: BannerRepo,
 		private val geoModel: GeoModel) : UpdateAction<Banner>() {
 
-	fun createBanner(cityId: String?, startDate: LocalDateTime?, endDate: LocalDateTime?, data: Map<String, String>,
-	                 regionId: String?): Banner {
+	fun createBanner(citiesIds: List<String>?, startDate: LocalDateTime?, endDate: LocalDateTime?, data: Map<String, String>,
+	                 regionsIds: List<String>?): Banner {
 		return repository.save(Banner().apply {
 			ObjectFromMapUpdater(this, data).exclude(*Excludes.default).modify()
 			startDate?.let { this.startDate = it }
 			endDate?.let { this.endDate = it }
-			cityId?.let {
-				city = geoModel.cityOps.getById(it)
-				region = city?.parentRegion
+			citiesIds?.let {
+				cities = geoModel.cityOps.getByIds(it).toMutableList()
+				regions = cities.map { it.parentRegion }.toMutableList()
 			}
-			regionId?.let {
-				region = geoModel.regionOps.getById(it)
+			regionsIds?.let {
+				regions = geoModel.regionOps.getByIds(it).toMutableList()
 			}
 		})
 	}
 
-	fun editBanner(id: String, startDate: Long?, endDate: Long?, cityId: String?, regionId: String?,
+	fun editBanner(id: String, startDate: Long?, endDate: Long?, citiesIds: List<String>?, regionsIds: List<String>?,
 	               data: Map<String, String>) = autoEdit(
 			id = id, params = data, exclude = *Excludes.default) {
 		startDate?.let { this.startDate = it.toLocalDateTime() }
 		endDate?.let { this.endDate = it.toLocalDateTime() }
-		cityId?.let {
-			if (it == "") {
-				city = null
-			} else {
-				city = geoModel.cityOps.getById(it)
-				region = city?.parentRegion
-			}
+		citiesIds?.let {
+			cities = geoModel.cityOps.getByIds(it).toMutableList()
+			regions = cities.map { it.parentRegion }.toMutableList()
 		}
-		regionId?.let {
-			if (it == "") {
-				region = null
-			} else {
-				region = geoModel.regionOps.getById(it)
-			}
+		regionsIds?.let {
+			regions = geoModel.regionOps.getByIds(it).toMutableList()
 		}
 	}
 
@@ -66,25 +58,12 @@ class BannerModel(
 
 		if (cityId != null || regionId != null) {
 			filter.where { root, _, cb ->
-				//				return@where cityId?.let {
-				//					cb.or(
-				//							cb.equal(root.get<City>("city"), geoModel.cityOps.getById(it)),
-				//							cb.isNull(root.get<City>("city"))
-				//					)
-				//				} ?: regionId?.let {
-				//					cb.or(
-				//							cb.equal(root.get<Region>("region"), geoModel.regionOps.getById(it)),
-				//							cb.isNull(root.get<Region>("region"))
-				//					)
-				//				}
-				//				?: throw IllegalStateException()
-
 				return@where cb.or(cityId?.let {
-					cb.equal(root.get<City>("city"), geoModel.cityOps.getById(it))
+					cb.isMember(geoModel.cityOps.getById(it), root.get("cities"))
 				} ?: regionId?.let {
-					cb.equal(root.get<Region>("region"), geoModel.regionOps.getById(it))
+					cb.isMember(geoModel.regionOps.getById(it), root.get("regions"))
 				}
-				?: throw IllegalStateException(), cb.isNull(root.get<City>("city")))
+				?: throw IllegalStateException(), cb.isEmpty(root.get("cities")))
 			}
 		}
 

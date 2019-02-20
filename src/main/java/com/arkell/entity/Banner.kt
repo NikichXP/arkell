@@ -6,6 +6,7 @@ import com.arkell.util.IDGenerator
 import java.time.LocalDateTime
 import javax.persistence.Entity
 import javax.persistence.Id
+import javax.persistence.ManyToMany
 import javax.persistence.ManyToOne
 
 @Entity
@@ -20,10 +21,10 @@ class Banner(var img: String, var text: String?, var link: String = "https://goo
 	var displayName: String? = null
 	var title: String? = null
 
-	@ManyToOne
-	var city: City? = null
-	@ManyToOne
-	var region: Region? = null
+	@ManyToMany
+	var cities = mutableListOf<City>()
+	@ManyToMany
+	var regions = mutableListOf<Region>()
 
 	@Id
 	override var id: String = IDGenerator.longId()
@@ -36,5 +37,13 @@ class Banner(var img: String, var text: String?, var link: String = "https://goo
 	override var featuredWeb: Boolean? = false
 	override var showApp: Boolean? = false
 	override var showWeb: Boolean? = false
+
+
+	// legacy below
+
+	@ManyToOne
+	var city: City? = null
+	@ManyToOne
+	var region: Region? = null
 
 }
