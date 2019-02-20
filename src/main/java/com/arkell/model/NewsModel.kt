@@ -22,14 +22,20 @@ class NewsModel(
 		private val partnerModel: PartnerModel) : UpdateAction<News>() {
 
 
-	fun create(priority: Int? = null, regionId: String? = null, cityId: String? = null, data: Map<String, String>,
+	fun create(priority: Int? = null, citiesIds: List<String>?, regionsIds: List<String>?, data: Map<String, String>,
 	           beginDate: Long? = null, endDate: Long? = null, offers: Array<String>?, partners: Array<String>?) =
 			News().apply {
 
 				ObjectFromMapUpdater(this, data).exclude(*Excludes.default).modify()
 
-				regionId?.let { this.regionId = geoModel.regionOps.getById(it).id }
-				cityId?.let { this.cityId = geoModel.cityOps.getById(it).id }
+				citiesIds?.let {
+					cities = geoModel.cityOps.getByIds(it).toMutableList()
+					regions = cities.map { it.parentRegion }.toMutableList()
+				}
+				regionsIds?.let {
+					regions = geoModel.regionOps.getByIds(it).toMutableList()
+				}
+
 				this.beginDate = beginDate ?: System.currentTimeMillis()
 				this.endDate = endDate ?: System.currentTimeMillis()
 
@@ -77,17 +83,12 @@ class NewsModel(
 
 		if (cityId != null || regionId != null) {
 			filter.where { root, _, cb ->
-				return@where cityId?.let {
-					cb.or(
-							cb.equal(root.get<String>("cityId"), it),
-							cb.isNull(root.get<String>("cityId"))
-					)
+				return@where cb.or(cityId?.let {
+					cb.isMember(geoModel.cityOps.getById(it), root.get("cities"))
 				} ?: regionId?.let {
-					cb.or(
-							cb.equal(root.get<String>("regionId"), it),
-							cb.isNull(root.get<String>("regionId"))
-					)
-				} ?: throw IllegalStateException()
+					cb.isMember(geoModel.regionOps.getById(it), root.get("regions"))
+				}
+				?: throw IllegalStateException(), cb.isEmpty(root.get("cities")))
 			}
 		}
 
@@ -106,17 +107,15 @@ class NewsModel(
 				?: "priority"), "created").result(repository)
 	}
 
-	fun edit(id: String, regionId: String? = null, cityId: String? = null, beginDate: Long? = null, endDate: Long? = null,
+	fun edit(id: String, citiesIds: List<String>?, regionsIds: List<String>?, beginDate: Long? = null, endDate: Long? = null,
 	         data: Map<String, String>) =
 			autoEdit(id, data) {
-				regionId?.let { if (it == "null") this.regionId = null else this.regionId = geoModel.regionOps.getById(it).id }
-				if (cityId == "null") {
-					this.cityId = null
-				} else {
-					cityId?.let { geoModel.cityOps.getById(it) }?.let {
-						this.cityId = it.id
-						this.regionId = it.parentRegion.id
-					}
+				citiesIds?.let {
+					cities = geoModel.cityOps.getByIds(it).toMutableList()
+					regions = cities.map { it.parentRegion }.toMutableList()
+				}
+				regionsIds?.let {
+					regions = geoModel.regionOps.getByIds(it).toMutableList()
 				}
 				this.beginDate = beginDate ?: this.beginDate
 				this.endDate = endDate ?: this.endDate

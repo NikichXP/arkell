@@ -1,5 +1,7 @@
 package com.arkell.entity
 
+import com.arkell.entity.geo.City
+import com.arkell.entity.geo.Region
 import com.arkell.util.IDGenerator
 import javax.persistence.*
 
@@ -36,11 +38,10 @@ data class News(var title: String,
 			field = value ?: false
 		}
 
-	var regionId: String? = null
-	var cityId: String? = null
-
-	@ElementCollection
-	var citiesIds = ArrayList<String>()
+	@ManyToMany
+	var cities = mutableListOf<City>()
+	@ManyToMany
+	var regions = mutableListOf<Region>()
 
 	var onlyClient: Boolean? = false
 	var featured: Boolean? = false
@@ -53,5 +54,11 @@ data class News(var title: String,
 	override var featuredWeb: Boolean? = false
 	override var showApp: Boolean? = false
 	override var showWeb: Boolean? = false
+
+
+	// legacy
+
+	var regionId: String? = null
+	var cityId: String? = null
 
 }
