@@ -24,6 +24,7 @@ data class News(var title: String,
 
 	var imageUrl: String? = null
 	var imageApp: String? = null
+
 	@Column(columnDefinition = "TEXT")
 	var terms: String? = null
 	var workTerms: String? = null

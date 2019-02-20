@@ -18,9 +18,9 @@ class AdminBannerAPI(
 		private val bannerModel: BannerModel) {
 
 	@PostMapping("/create")
-	fun create(@RequestParam cityId: String?, request: HttpServletRequest, @RequestParam regionId: String?,
+	fun create(@RequestParam citiesIds: List<String>?, request: HttpServletRequest, @RequestParam regionsIds: List<String>?,
 	           @RequestParam startDate: Long, @RequestParam endDate: Long): Banner {
-		return bannerModel.createBanner(cityId = cityId, data = request.getParamData(), regionId = regionId,
+		return bannerModel.createBanner(citiesIds = citiesIds, data = request.getParamData(), regionsIds = regionsIds,
 				startDate = startDate.toLocalDateTime(), endDate = endDate.toLocalDateTime())
 	}
 
@@ -36,9 +36,9 @@ class AdminBannerAPI(
 
 	@PostMapping("/edit")
 	fun edit(@RequestParam id: String, @RequestParam startDate: Long?, @RequestParam endDate: Long?,
-	         request: HttpServletRequest, @RequestParam cityId: String?, @RequestParam regionId: String?): Banner {
+	         request: HttpServletRequest, @RequestParam citiesIds: List<String>?, @RequestParam regionsIds: List<String>?): Banner {
 		return bannerModel.editBanner(id = id, startDate = startDate, endDate = endDate, data = request.getParamData(),
-				cityId = cityId, regionId = regionId)
+				citiesIds = citiesIds, regionsIds = regionsIds)
 	}
 
 	@PostMapping("/delete")

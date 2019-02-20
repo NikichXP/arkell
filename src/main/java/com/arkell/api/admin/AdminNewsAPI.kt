@@ -15,10 +15,10 @@ class AdminNewsAPI(
 		private val newsModel: NewsModel) {
 
 	@PostMapping("/create")
-	fun create(@RequestParam priority: Int?, @RequestParam regionId: String?, @RequestParam cityId: String?,
+	fun create(@RequestParam priority: Int?, @RequestParam regionsIds: List<String>?, @RequestParam citiesIds: List<String>?,
 	           @RequestParam beginDate: Long?, @RequestParam endDate: Long?, @RequestParam partners: Array<String>?,
 	           @RequestParam offers: Array<String>?, request: HttpServletRequest): News {
-		return newsModel.create(priority = priority, regionId = regionId, cityId = cityId, beginDate = beginDate,
+		return newsModel.create(priority = priority, regionsIds = regionsIds, citiesIds = citiesIds, beginDate = beginDate,
 				endDate = endDate, partners = partners, offers = offers, data = request.getParamData())
 	}
 
@@ -30,9 +30,9 @@ class AdminNewsAPI(
 	 * @param offerId same as partnerId
 	 */
 	@PostMapping("/edit/{id}")
-	fun edit(@PathVariable id: String, @RequestParam regionId: String?, @RequestParam cityId: String?,
+	fun edit(@PathVariable id: String, @RequestParam regionsIds: List<String>?, @RequestParam citiesIds: List<String>?,
 	         request: HttpServletRequest, @RequestParam beginDate: Long?, @RequestParam endDate: Long?): News {
-		return newsModel.edit(id = id, regionId = regionId, cityId = cityId,
+		return newsModel.edit(id = id, regionsIds = regionsIds, citiesIds = citiesIds,
 				data = request.getParamData(), beginDate = beginDate,
 				endDate = endDate)
 	}
