@@ -3,6 +3,7 @@ package com.arkell.repo
 import com.arkell.util.OffsetPageRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
@@ -18,8 +19,7 @@ class SpecificationHelper<T> {
 
 	val specs = mutableListOf<Specification<T>>()
 	var sort: Sort = Sort.by(Sort.Direction.DESC, "created")
-	var page: Int? = 0
-	var pageSize = 20
+	var page: Pageable = PageRequest.of(0, 20)
 	var offset: Int? = null
 
 	/**
@@ -58,18 +58,21 @@ class SpecificationHelper<T> {
 	}
 
 	fun page(page: Int, pageSize: Int = 20) = apply {
-		this.page = page
-		this.pageSize = pageSize
+		this.page = PageRequest.of(page, pageSize, sort)
 	}
 
 	fun offset(offset: Int, pageSize: Int = 20) = apply {
-		this.page = null
-		this.pageSize = pageSize
-		this.offset = offset
+		this.page = OffsetPageRequest(0, pageSize, sort).withOffset(offset.toLong())
 	}
 
 	fun sort(direction: Sort.Direction, vararg param: String) = apply {
 		sort = Sort.by(direction, *param)
+
+		if (page is OffsetPageRequest) {
+			page = OffsetPageRequest(0, pageSize = page.pageSize, sort = sort).withOffset(page.offset)
+		} else {
+			page = PageRequest.of(page.pageNumber, page.pageSize, sort)
+		}
 	}
 
 	fun result(repository: JpaSpecificationExecutor<T>): Page<T> {
@@ -77,10 +80,7 @@ class SpecificationHelper<T> {
 			specs += Specification { _, _, criteriaBuilder -> criteriaBuilder.conjunction() }
 		}
 
-		return if (page != null) repository.findAll(specs.reduce { s1, s2 -> s1.and(s2) },
-				PageRequest.of(page!!, pageSize, sort))
-		else repository.findAll(specs.reduce { s1, s2 -> s1.and(s2) },
-				OffsetPageRequest(offset!!, pageSize, sort))
+		return repository.findAll(specs.reduce { s1, s2 -> s1.and(s2) }, page)
 	}
 
 	fun resultUnPaged(repository: JpaSpecificationExecutor<T>): List<T> {

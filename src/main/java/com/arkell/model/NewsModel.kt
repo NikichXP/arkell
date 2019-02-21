@@ -1,8 +1,10 @@
 package com.arkell.model
 
+import com.arkell.entity.Banner
 import com.arkell.entity.News
 import com.arkell.entity.Offer
 import com.arkell.entity.Partner
+import com.arkell.entity.geo.City
 import com.arkell.entity.misc.Platform
 import com.arkell.repo.NewsRepo
 import com.arkell.repo.PlatformFeaturedSpecificationHelper
@@ -12,6 +14,7 @@ import com.arkell.util.objects.ObjectFromMapUpdater
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 @Service
@@ -134,5 +137,28 @@ class NewsModel(
 		return repository.getByUrl(url) ?: notFound(url)
 	}
 
+	@Scheduled
+	fun migrateNews() {
+		val filter = SpecificationHelper<News>()
+
+		filter.where { root, _, criteriaBuilder ->
+			criteriaBuilder.isNotNull(root.get<City>("city"))
+		}
+
+		filter.page(0, 10)
+
+		var doIt: Boolean
+
+		do {
+			doIt = false
+
+			filter.result(repository).forEach {
+				it.cityId?.run { it.cities.add(geoModel.cityOps.getById(this)) }
+				it.regionId?.run { it.regions.add(geoModel.regionOps.getById(this)) }
+				repository.save(it)
+				doIt = true
+			}
+		} while (doIt)
+	}
 
 }
