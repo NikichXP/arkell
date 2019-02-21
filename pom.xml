@@ -6,7 +6,7 @@
 
 	<groupId>ru.raiffeisen</groupId>
 	<artifactId>discountsforyou</artifactId>
-	<version>1.0.5.7</version>
+	<version>1.0.7.1</version>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>

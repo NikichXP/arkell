@@ -37,7 +37,7 @@ class Partner(var title: String,
 	@ManyToOne
 	var city: City? = null
 	@ManyToMany
-	var cities = ArrayList<City>()
+	var cities = mutableListOf<City>()
 
 	@Column(columnDefinition = "TEXT")
 	var about: String? = null
