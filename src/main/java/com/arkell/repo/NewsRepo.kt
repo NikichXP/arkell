@@ -12,7 +12,9 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface NewsRepo : JpaRepository<News, String>, JpaSpecificationExecutor<News> {
 
-	override fun findAll(pageable: Pageable): Page<News>
+	@Transactional
+	fun findByCityIdIsNull(page: Pageable): Page<News>
+
 	fun getByUrl(url: String): News?
 
 }
