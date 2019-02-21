@@ -142,7 +142,7 @@ class NewsModel(
 		val filter = SpecificationHelper<News>()
 
 		filter.where { root, _, criteriaBuilder ->
-			criteriaBuilder.isNotNull(root.get<City>("city"))
+			criteriaBuilder.isNotNull(root.get<String>("cityId"))
 		}
 
 		filter.page(0, 10)
@@ -155,6 +155,8 @@ class NewsModel(
 			filter.result(repository).forEach {
 				it.cityId?.run { it.cities.add(geoModel.cityOps.getById(this)) }
 				it.regionId?.run { it.regions.add(geoModel.regionOps.getById(this)) }
+				it.cityId = null
+				it.regionId = null
 				repository.save(it)
 				doIt = true
 			}
