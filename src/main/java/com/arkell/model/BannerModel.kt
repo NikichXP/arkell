@@ -2,7 +2,6 @@ package com.arkell.model
 
 import com.arkell.entity.Banner
 import com.arkell.entity.geo.City
-import com.arkell.entity.geo.Region
 import com.arkell.entity.misc.Platform
 import com.arkell.repo.BannerRepo
 import com.arkell.repo.PlatformFeaturedSpecificationHelper
@@ -12,6 +11,7 @@ import com.arkell.util.objects.ObjectFromMapUpdater
 import com.arkell.util.toLocalDateTime
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Sort
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -87,6 +87,31 @@ class BannerModel(
 		}
 
 		return filter.sort(Sort.Direction.DESC, sort ?: "created").result(repository)
+	}
+
+	@Scheduled(fixedDelay = 10_000_000, initialDelay = 20_000)
+	fun migrateBanners() {
+		val filter = SpecificationHelper<Banner>()
+
+		filter.where { root, criteriaQuery, criteriaBuilder ->
+			criteriaBuilder.isNotNull(root.get<City>("city"))
+		}
+
+		filter.page(0, 10)
+
+		var doIt: Boolean
+
+		do {
+
+			doIt = false
+
+			filter.result(repository).forEach {
+				it.city?.run { it.cities.add(this) }
+				it.region?.run { it.regions.add(this) }
+				repository.save(it)
+				doIt = true
+			}
+		} while (doIt)
 	}
 
 }
