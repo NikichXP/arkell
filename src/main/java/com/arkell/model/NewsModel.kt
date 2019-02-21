@@ -137,7 +137,7 @@ class NewsModel(
 		return repository.getByUrl(url) ?: notFound(url)
 	}
 
-	@Scheduled
+	@Scheduled(fixedDelay = 60_000)
 	fun migrateNews() {
 		val filter = SpecificationHelper<News>()
 
