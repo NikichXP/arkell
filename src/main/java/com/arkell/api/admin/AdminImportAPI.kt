@@ -126,7 +126,7 @@ class AdminImportAPI(
 	/**
 	 * Import places from XLSX file.
 	 * Rows:
-	 * 0 - partner id
+	 * 0 - not used (can be row number)
 	 * 1 - place id
 	 *
 	 * not very necessary:
@@ -150,7 +150,7 @@ class AdminImportAPI(
 	 *
 	 */
 	@PostMapping("/start/objectlocation")
-	fun startObjectLocationImport(request: HttpServletRequest): String {
+	fun startObjectLocationImport(@RequestParam partnerId: String, request: HttpServletRequest): String {
 		val file = fileModel.uploadToTempStorage(request.getPart("file"))
 		val sheet = SheetsModelProxy(file).getSheet(0)
 
@@ -171,6 +171,7 @@ class AdminImportAPI(
 						}
 					}
 
+					val partner = partnerModel.getById(partnerId)
 
 					sheet.map { list ->
 						if (list.size < 15) {
@@ -184,8 +185,6 @@ class AdminImportAPI(
 						}
 					}.forEach {
 						try {
-							val partner = partnerModel.getById(it[0])
-
 							launch {
 								val place = places.getById(it[1])
 
