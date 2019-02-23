@@ -69,6 +69,7 @@ class MailTextsService(
 			this.offerList = offerList?.map { offerModel.getById(it).id }?.toMutableList() ?: mutableListOf()
 			this.projectList = projectList?.map { specialProjectModel.getById(it).id }?.toMutableList()
 					?: mutableListOf()
+			this.gender = gender
 			this.category = category?.let { categoryModel.getById(it) }
 		}
 
@@ -89,7 +90,6 @@ class MailTextsService(
 		regionId?.let { region = geoModel.regionOps.getById(it) }
 		categoryId?.let { category = categoryModel.getById(it) }
 		date?.let { this.date = it }
-
 		gender?.let { this.gender = it }
 
 		if (date != null && date < configService.getParam("mail-scheduler", "msg.lastCheck", "0").toLong()) {

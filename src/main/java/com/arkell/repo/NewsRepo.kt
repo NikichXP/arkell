@@ -12,8 +12,10 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface NewsRepo : JpaRepository<News, String>, JpaSpecificationExecutor<News> {
 
-	@Transactional
+	@Transactional()
 	fun findByCityIdIsNull(page: Pageable): Page<News>
+
+	fun countByCityIdIsNull(): Long
 
 	fun getByUrl(url: String): News?
 
