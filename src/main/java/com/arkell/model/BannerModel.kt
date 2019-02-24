@@ -11,14 +11,19 @@ import com.arkell.util.objects.ObjectFromMapUpdater
 import com.arkell.util.toLocalDateTime
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Sort
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import java.lang.Exception
 import java.time.LocalDateTime
+import javax.annotation.PostConstruct
 
 @Service
 class BannerModel(
 		override val repository: BannerRepo,
-		private val geoModel: GeoModel) : UpdateAction<Banner>() {
+		private val geoModel: GeoModel,
+
+		val jdbcTemplate: JdbcTemplate) : UpdateAction<Banner>() {
 
 	fun createBanner(citiesIds: List<String>?, startDate: LocalDateTime?, endDate: LocalDateTime?, data: Map<String, String>,
 	                 regionsIds: List<String>?): Banner {
@@ -89,29 +94,42 @@ class BannerModel(
 		return filter.sort(Sort.Direction.DESC, sort ?: "created").result(repository)
 	}
 
-	@Scheduled(fixedDelay = 10_000_000, initialDelay = 20_000)
-	fun migrateBanners() {
-		val filter = SpecificationHelper<Banner>()
-
-		filter.where { root, criteriaQuery, criteriaBuilder ->
-			criteriaBuilder.isNotNull(root.get<City>("city"))
-		}
-
-		filter.page(0, 10)
+	@PostConstruct
+	fun migrateNews() {
+		println("Migrate banners start")
 
 		var doIt: Boolean
+		var ctr = 0
 
 		do {
-
 			doIt = false
 
-			filter.result(repository).forEach {
-				it.city?.run { it.cities.add(this) }
-				it.region?.run { it.regions.add(this) }
-				repository.save(it)
-				doIt = true
+			jdbcTemplate.query("select * from banner where city_id notnull or region_id notnull limit 10") {
+
+				try {
+					if (it.getString("city_id") != null) {
+						jdbcTemplate.update("insert into banner_city(banner_id, cities_id) " +
+								"values ('${it.getString("id")}', '${it.getString("city_id")}')")
+					}
+
+					if (it.getString("region_id") != null) {
+						jdbcTemplate.update("insert into banner_region(banner_id, regions_id) " +
+								"values ('${it.getString("id")}', '${it.getString("region_id")}')")
+					}
+
+					jdbcTemplate.update("update banner set city_id = null, region_id = null where id = '${it.getString("id")}'")
+
+					ctr++
+					doIt = true
+				} catch (e: Exception) {
+					e.printStackTrace()
+				}
 			}
+
 		} while (doIt)
+
+		println("Migrate banners end, done: $ctr")
+
 	}
 
 }

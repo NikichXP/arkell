@@ -12,15 +12,19 @@ import com.arkell.util.objects.ObjectFromMapUpdater
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
-import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
+import javax.annotation.PostConstruct
 
 @Service
 class NewsModel(
 		override val repository: NewsRepo,
 		private val geoModel: GeoModel,
 		private val offerModel: OfferModel,
-		private val partnerModel: PartnerModel) : UpdateAction<News>() {
+		private val partnerModel: PartnerModel,
+
+		//temporary, for bg-update job
+		private val jdbcTemplate: JdbcTemplate) : UpdateAction<News>() {
 
 
 	fun create(priority: Int? = null, citiesIds: List<String>?, regionsIds: List<String>?, data: Map<String, String>,
@@ -78,9 +82,9 @@ class NewsModel(
 	           cityId: String? = null, platform: Platform, featured: Boolean? = null): Page<News> {
 
 		val filter = SpecificationHelper<News>()
-			.with("partner" to partnerId?.let { partnerModel.getById(it) })
-			.textIgnoreCase("title", name)
-			.page(page, pageSize)
+				.with("partner" to partnerId?.let { partnerModel.getById(it) })
+				.textIgnoreCase("title", name)
+				.page(page, pageSize)
 
 		if (cityId != null || regionId != null) {
 			filter.where { root, _, cb ->
@@ -110,7 +114,7 @@ class NewsModel(
 
 	fun edit(id: String, citiesIds: List<String>?, regionsIds: List<String>?, beginDate: Long? = null, endDate: Long? = null,
 	         data: Map<String, String>) =
-			autoEdit(id, data) {
+			autoEdit(id, data, exclude = *Excludes.default.toMutableList().apply { add("cityId") }.toTypedArray()) {
 				citiesIds?.let {
 					cities = geoModel.cityOps.getByIds(it).toMutableList()
 					regions = cities.map { it.parentRegion }.toMutableList()
@@ -135,34 +139,44 @@ class NewsModel(
 		return repository.getByUrl(url) ?: notFound(url)
 	}
 
-	@Scheduled(fixedDelay = 60_000)
+	@PostConstruct
 	fun migrateNews() {
+		println("Migrate news start")
+
 		var doIt: Boolean
+		var ctr = 0
 
 		do {
 			doIt = false
 
-//			repository.findAll({ root, _, criteriaBuilder ->
-//				criteriaBuilder.isNotNull(root.get<String>("cityId"))
-//			}, PageRequest.of(0, 10)).forEach {
-//				it.cityId?.run { it.cities.add(geoModel.cityOps.getById(this)) }
-//				it.regionId?.run { it.regions.add(geoModel.regionOps.getById(this)) }
-//				it.cityId = null
-//				it.regionId = null
-//				repository.save(it)
-//				doIt = true
-//			}
+			jdbcTemplate.query("select * from news where cityid notnull or regionid notnull limit 10") {
 
-			repository.findByCityIdIsNull(PageRequest.of(0, 10)).forEach {
-				it.cityId?.run { it.cities.add(geoModel.cityOps.getById(this)) }
-				it.regionId?.run { it.regions.add(geoModel.regionOps.getById(this)) }
-				it.cityId = null
-				it.regionId = null
-				repository.save(it)
-				doIt = true
+				try {
+					if (it.getString("cityid") != null) {
+						jdbcTemplate.update("insert into news_city(news_id, cities_id) " +
+								"values ('${it.getString("id")}', '${it.getString("cityid")}')")
+					}
+
+					try {
+						if (it.getString("regionid") != null) {
+							jdbcTemplate.update("insert into news_region(news_id, regions_id) " +
+									"values ('${it.getString("id")}', '${it.getString("regionid")}')")
+						}
+					} catch (ignored: Exception) {
+					}
+
+					jdbcTemplate.update("update news set cityid = null, regionid = null where id = '${it.getString("id")}'")
+
+					doIt = true
+					ctr++
+				} catch (e: Exception) {
+					e.printStackTrace()
+				}
 			}
 
 		} while (doIt)
-	}
 
+		println("Migrate news end, done: $ctr")
+
+	}
 }

@@ -58,7 +58,7 @@ class AdminGeoAPI(
 	 * @param geoY is longitude
 	 */
 	@PostMapping("/place/create")
-	fun placeCreate(@RequestParam name: String, @RequestParam cityId: String, @RequestParam isReal: Boolean?,
+	fun createPlace(@RequestParam name: String, @RequestParam cityId: String, @RequestParam isReal: Boolean?,
 	                @RequestParam geoX: Double, @RequestParam geoY: Double, @RequestParam type: String,
 	                @RequestParam logo: String? = null): Place {
 		return geoModel.placeOps.createPlace(name = name, cityId = cityId, isReal = isReal ?: true,

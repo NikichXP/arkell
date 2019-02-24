@@ -111,7 +111,7 @@ class DBConfig {
 			}
 		}
 
-		val testDB = true
+		val testDB = false
 
 		if (testDB && File("C:/").exists()) {
 			dataSource.jdbcUrl = "jdbc:postgresql://127.0.0.1:5432/arkell"

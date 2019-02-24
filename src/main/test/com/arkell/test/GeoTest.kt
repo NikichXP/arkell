@@ -62,10 +62,10 @@
 //		assertTrue { geoAPI.cities(regionId = null, showHidden = true, title = null).filter { it.name == "Джетсвилль" }.size == 1 }
 //
 //		val places = listOf(
-//				adminGeoAPI.placeCreate(name = "Foo", cityId = city.id, geoX = 35.55, geoY = 45.05, isReal = true, type = "metro"),
-//				adminGeoAPI.placeCreate(name = "Foo", cityId = city.id, geoX = -5.55, geoY = -5.05, isReal = true, type = "metro"),
-//				adminGeoAPI.placeCreate(name = "Bar", cityId = city.id, geoX = 35.05, geoY = 45.55, isReal = true, type = "metro"),
-//				adminGeoAPI.placeCreate(name = "Bar", cityId = city.id, geoX = -5.55, geoY = -5.05, isReal = true, type = "metro")
+//				adminGeoAPI.createPlace(name = "Foo", cityId = city.id, geoX = 35.55, geoY = 45.05, isReal = true, type = "metro"),
+//				adminGeoAPI.createPlace(name = "Foo", cityId = city.id, geoX = -5.55, geoY = -5.05, isReal = true, type = "metro"),
+//				adminGeoAPI.createPlace(name = "Bar", cityId = city.id, geoX = 35.05, geoY = 45.55, isReal = true, type = "metro"),
+//				adminGeoAPI.createPlace(name = "Bar", cityId = city.id, geoX = -5.55, geoY = -5.05, isReal = true, type = "metro")
 //		)
 //
 //		assert(geoAPI.places(cityId = city.id, regionId = null, showHidden = true, title = null).size == 2)
@@ -79,9 +79,9 @@
 //		adminGeoAPI.cityCreate(name = "Пльзень", regionId = region.id, geoX = 0.0, geoY = 0.0)
 //		assert(geoAPI.cities(region.id, showHidden = true, title = null).size >= 3)
 //
-//		adminGeoAPI.placeCreate(name = "Praha 4", cityId = city.id, geoX = 35.55, geoY = 35.55, isReal = true, type = "metro")
-//		adminGeoAPI.placeCreate(name = "Praha 5", cityId = city.id, geoX = 35.65, geoY = 35.65, isReal = true, type = "metro")
-//		adminGeoAPI.placeCreate(name = "Praha 6", cityId = city.id, geoX = 35.75, geoY = 35.75, isReal = true, type = "metro")
+//		adminGeoAPI.createPlace(name = "Praha 4", cityId = city.id, geoX = 35.55, geoY = 35.55, isReal = true, type = "metro")
+//		adminGeoAPI.createPlace(name = "Praha 5", cityId = city.id, geoX = 35.65, geoY = 35.65, isReal = true, type = "metro")
+//		adminGeoAPI.createPlace(name = "Praha 6", cityId = city.id, geoX = 35.75, geoY = 35.75, isReal = true, type = "metro")
 //		assert(geoAPI.places(city.id, null, showHidden = true, title = null).size >= 3)
 //	}
 //
