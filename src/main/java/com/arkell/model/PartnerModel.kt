@@ -19,6 +19,7 @@ import com.arkell.util.objects.ObjectFromMapUpdater
 import com.arkell.util.random
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
 import org.springframework.context.annotation.Lazy
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -57,6 +58,8 @@ class PartnerModel(
 				makeServiceLocation(places.find { it.id == placeId }!!, getById(id))
 			}
 		}
+
+		launch { migrateData() }
 	}
 
 	fun createPartner(data: Map<String, String> = mapOf(), discountCategory: String, cityId: String?): Partner {
@@ -339,5 +342,37 @@ class PartnerModel(
 		}
 	}
 
+
+	fun migrateData() {
+
+		println("Partner data migration start")
+
+		var doIt: Boolean
+		var ctr = 0
+
+		do {
+			doIt = false
+
+			jdbcTemplate.query("select * from partner where city_id notnull limit 10") {
+
+				try {
+					if (it.getString("city_id") != null) {
+						jdbcTemplate.update("insert into partner_city(partner_id, cities_id) " +
+								"values ('${it.getString("id")}', '${it.getString("city_id")}')")
+					}
+
+					jdbcTemplate.update("update partner set city_id = null where id = '${it.getString("id")}'")
+
+					doIt = true
+					ctr++
+				} catch (e: Exception) {
+					e.printStackTrace()
+				}
+			}
+
+		} while (doIt)
+
+		println("Migrate Partner end, done: $ctr")
+	}
 
 }
