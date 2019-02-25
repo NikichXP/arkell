@@ -10,8 +10,10 @@ import com.arkell.util.objects.Excludes
 import com.arkell.util.objects.ObjectFromMapUpdater
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import javax.annotation.PostConstruct
 
 @Service
 class MailTextsService(
@@ -23,10 +25,11 @@ class MailTextsService(
 		private val mailBroadcastService: MailBroadcastService,
 		private val categoryModel: CategoryModel,
 		override val repository: MailBroadcastRepo,
-		private val configService: ConfigService) : UpdateAction<MailBroadcast>() {
+		private val configService: ConfigService,
+		private val jdbcTemplate: JdbcTemplate) : UpdateAction<MailBroadcast>() {
 
 	@Scheduled(fixedDelay = 60_000L)
-	fun init() {
+	fun scheduleBroadcast() {
 
 		val lastCheck = configService.getParam("mail-scheduler", "msg.lastCheck", "0").toLong()
 
@@ -83,7 +86,8 @@ class MailTextsService(
 	}
 
 	fun edit(id: String, data: Map<String, String>, newsList: List<String>?, offerList: List<String>?, date: Long?,
-	         projectList: List<String>?, regionId: String?, categoryId: String?, gender: UserEntity.Gender? = null) = autoEdit(id, data) {
+	         projectList: List<String>?, regionId: String?, categoryId: String?, gender: UserEntity.Gender? = null,
+	         cities: List<String>?, regions: List<String>?) = autoEdit(id, data) {
 		newsList?.let { this.newsList = it.map { newsModel.getById(it).id }.toMutableList() }
 		offerList?.let { this.offerList = it.map { offerModel.getById(it).id }.toMutableList() }
 		projectList?.let { this.projectList = it.map { specialProjectModel.getById(it).id }.toMutableList() }
@@ -91,6 +95,13 @@ class MailTextsService(
 		categoryId?.let { category = categoryModel.getById(it) }
 		date?.let { this.date = it }
 		gender?.let { this.gender = it }
+
+		cities?.let {
+			this.cities = geoModel.cityOps.getByIds(it)
+		}
+		regions?.let {
+			this.regions = geoModel.regionOps.getByIds(it)
+		}
 
 		if (date != null && date < configService.getParam("mail-scheduler", "msg.lastCheck", "0").toLong()) {
 			mailBroadcastService.broadcast(this)
@@ -105,4 +116,14 @@ class MailTextsService(
 	fun getProjectList(id: String) = specialProjectModel.getByIds(getById(id).projectList)
 	fun getNewsList(id: String) = newsModel.getByIds(getById(id).newsList)
 
+	@PostConstruct
+	fun postConstruct() {
+		jdbcTemplate.query("select id, region_id from mailbroadcast where region_id notnull") {
+			jdbcTemplate.update("insert into mailbroadcast_region(mailbroadcast_id, regions_id) values " +
+					"('${it.getString("id")}', '${it.getString("region_id")}')")
+
+			jdbcTemplate.update("update mailbroadcast set region_id = null where id = '${it.getString("id")}'")
+
+		}
+	}
 }

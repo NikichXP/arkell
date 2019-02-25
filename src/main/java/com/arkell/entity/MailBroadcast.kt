@@ -1,10 +1,9 @@
 package com.arkell.entity
 
+import com.arkell.entity.geo.City
 import com.arkell.entity.geo.Region
 import com.arkell.util.IDGenerator
 import javax.persistence.*
-
-
 
 @Entity
 class MailBroadcast(
@@ -20,8 +19,12 @@ class MailBroadcast(
 	@Id
 	override var id: String = IDGenerator.longId()
 
-	@ManyToOne
-	var region: Region? = null
+	@ManyToMany
+	var cities: List<City> = listOf()
+	@ManyToMany
+	var regions: List<Region> = listOf()
+
+
 	@ManyToOne
 	var category: Category? = null
 
@@ -42,5 +45,9 @@ class MailBroadcast(
 	override var created: Long? = System.currentTimeMillis()
 	override var updated: Long? = System.currentTimeMillis()
 	override var visible: Boolean? = true
+
+
+	@ManyToOne
+	var region: Region? = null
 
 }

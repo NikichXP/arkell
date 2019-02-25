@@ -112,16 +112,17 @@ class AdminMiscAPI(
 	fun mailEdit(@RequestParam id: String, request: HttpServletRequest, @RequestParam region: String?,
 	             @RequestParam category: String?, @RequestParam newsList: List<String>?, @RequestParam date: Long?,
 	             @RequestParam offerList: List<String>?, @RequestParam projectList: List<String>?,
-	             @RequestParam gender: String?): MailBroadcast {
+	             @RequestParam gender: String?, @RequestParam cities: List<String>?,
+	             @RequestParam regions: List<String>?): MailBroadcast {
 		return mailTextsService.edit(id = id, data = request.getParamData(), newsList = newsList, offerList = offerList,
-				projectList = projectList, regionId = region, categoryId = category, date = date,
-				gender = gender?.let {
-					when (it.toLowerCase()) {
-						"male" -> UserEntity.Gender.MALE
-						"female" -> UserEntity.Gender.FEMALE
-						else -> throw IllegalArgumentException("Gender can be 'male' or 'female' only")
-					}
-				})
+				projectList = projectList, regionId = region, categoryId = category, date = date, regions = regions,
+				cities = cities, gender = gender?.let {
+			when (it.toLowerCase()) {
+				"male" -> UserEntity.Gender.MALE
+				"female" -> UserEntity.Gender.FEMALE
+				else -> throw IllegalArgumentException("Gender can be 'male' or 'female' only")
+			}
+		})
 	}
 
 	@GetMapping("/mail/{id}/offers")

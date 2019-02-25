@@ -25,9 +25,9 @@ class MailBroadcastService(
 				))
 			}
 
-			if (broadcast.region != null) {
+			broadcast.regions.forEach {
 				result = cb.and(result, cb.or(
-						cb.equal(root.get<Region>("region"), broadcast.region),
+						cb.equal(root.get<Region>("region"), it),
 						cb.isNull(root.get<Region>("region"))
 				))
 			}
