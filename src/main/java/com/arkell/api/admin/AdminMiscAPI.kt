@@ -91,10 +91,11 @@ class AdminMiscAPI(
 	@PostMapping("/mail/create")
 	fun mailCreate(@RequestParam region: String?, @RequestParam category: String?, @RequestParam newsList: List<String>?,
 	               @RequestParam offerList: List<String>?, @RequestParam projectList: List<String>?,
-	               @RequestParam gender: String?, request: HttpServletRequest): MailBroadcast {
+	               @RequestParam gender: String?, @RequestParam cities: List<String>?,
+	               @RequestParam regions: List<String>?, request: HttpServletRequest): MailBroadcast {
 		return mailTextsService.createMailBroadcast(
 				region = region, category = category, newsList = newsList,
-				offerList = offerList, projectList = projectList,
+				offerList = offerList, projectList = projectList, regions = regions, cities = cities,
 				gender = gender?.let {
 					when (it.toLowerCase()) {
 						"male" -> UserEntity.Gender.MALE
@@ -109,13 +110,13 @@ class AdminMiscAPI(
 	 *  @param gender can be "male" or "female" (ignore case)
 	 */
 	@PostMapping("/mail/edit")
-	fun mailEdit(@RequestParam id: String, request: HttpServletRequest, @RequestParam region: String?,
+	fun mailEdit(@RequestParam id: String, request: HttpServletRequest,
 	             @RequestParam category: String?, @RequestParam newsList: List<String>?, @RequestParam date: Long?,
 	             @RequestParam offerList: List<String>?, @RequestParam projectList: List<String>?,
 	             @RequestParam gender: String?, @RequestParam cities: List<String>?,
 	             @RequestParam regions: List<String>?): MailBroadcast {
 		return mailTextsService.edit(id = id, data = request.getParamData(), newsList = newsList, offerList = offerList,
-				projectList = projectList, regionId = region, categoryId = category, date = date, regions = regions,
+				projectList = projectList, categoryId = category, date = date, regions = regions,
 				cities = cities, gender = gender?.let {
 			when (it.toLowerCase()) {
 				"male" -> UserEntity.Gender.MALE

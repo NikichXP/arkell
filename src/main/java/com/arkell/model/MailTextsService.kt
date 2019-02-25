@@ -63,8 +63,8 @@ class MailTextsService(
 	}
 
 	fun createMailBroadcast(region: String?, category: String?, newsList: List<String>?, offerList: List<String>?,
-	                        projectList: List<String>?, gender: UserEntity.Gender? = null,
-	                        data: Map<String, String> = mapOf()): MailBroadcast {
+	                        projectList: List<String>?, gender: UserEntity.Gender? = null, cities: List<String>?,
+	                        regions: List<String>?, data: Map<String, String> = mapOf()): MailBroadcast {
 		val broadcast = MailBroadcast().apply {
 			ObjectFromMapUpdater(this, data).exclude(*Excludes.default).modify()
 			this.region = region?.let { geoModel.regionOps.getById(it) }
@@ -74,6 +74,12 @@ class MailTextsService(
 					?: mutableListOf()
 			this.gender = gender
 			this.category = category?.let { categoryModel.getById(it) }
+			cities?.let {
+				this.cities = geoModel.cityOps.getByIds(it)
+			}
+			regions?.let {
+				this.regions = geoModel.regionOps.getByIds(it)
+			}
 		}
 
 		repository.save(broadcast)
@@ -86,12 +92,11 @@ class MailTextsService(
 	}
 
 	fun edit(id: String, data: Map<String, String>, newsList: List<String>?, offerList: List<String>?, date: Long?,
-	         projectList: List<String>?, regionId: String?, categoryId: String?, gender: UserEntity.Gender? = null,
+	         projectList: List<String>?, categoryId: String?, gender: UserEntity.Gender? = null,
 	         cities: List<String>?, regions: List<String>?) = autoEdit(id, data) {
 		newsList?.let { this.newsList = it.map { newsModel.getById(it).id }.toMutableList() }
 		offerList?.let { this.offerList = it.map { offerModel.getById(it).id }.toMutableList() }
 		projectList?.let { this.projectList = it.map { specialProjectModel.getById(it).id }.toMutableList() }
-		regionId?.let { region = geoModel.regionOps.getById(it) }
 		categoryId?.let { category = categoryModel.getById(it) }
 		date?.let { this.date = it }
 		gender?.let { this.gender = it }
