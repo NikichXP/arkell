@@ -63,7 +63,7 @@ class OfferModel(
 
 		fun findAnyUrl(url: String) =
 				jdbcTemplate.queryForList("select id from offer where url = '$url'")
-					.map { it["id"]!! as String }
+						.map { it["id"]!! as String }
 
 		fun checkUrlId(list: List<String>): Boolean {
 			return when {
@@ -109,8 +109,8 @@ class OfferModel(
 	              priority: Int?, featured: Boolean? = null, realisation: String?) = edit(offerId) {
 
 		ObjectFromMapUpdater(this, data)
-			.exclude(*Excludes.default)
-			.modify()
+				.exclude(*Excludes.default)
+				.modify()
 
 		realisation?.let { this.realisation = getRealisationFromString(it) }
 		offerType?.let { this.offerType = it }

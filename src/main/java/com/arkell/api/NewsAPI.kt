@@ -38,10 +38,11 @@ class NewsAPI(
 	fun list(@RequestParam name: String?, @RequestParam partnerId: String?, @RequestParam actual: Boolean?,
 	         @RequestParam page: Int, @RequestParam pageSize: Int?, @RequestParam sort: String?,
 	         @RequestParam cityId: String?, @RequestParam regionId: String?, @RequestParam showHidden: Boolean?,
-	         @RequestParam platform: Platform?, @RequestParam featured: Boolean?): Page<News> {
+	         @RequestParam platform: Platform?, @RequestParam featured: Boolean?,
+	         @RequestParam archive: Boolean?): Page<News> {
 		return newsModel.listBy(name = name, partnerId = partnerId, actual = actual ?: true, page = page, sort = sort,
 				showHidden = showHidden, cityId = cityId, regionId = regionId, pageSize = pageSize ?: 20,
-				platform = platform ?: Platform.app, featured = featured)
+				platform = platform ?: Platform.app, featured = featured, archive = archive)
 	}
 
 	/**

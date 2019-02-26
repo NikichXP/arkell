@@ -79,7 +79,7 @@ class NewsModel(
 
 	fun listBy(name: String? = null, partnerId: String? = null, actual: Boolean, pageSize: Int, page: Int,
 	           sort: String? = null, offerId: String? = null, regionId: String? = null, showHidden: Boolean? = null,
-	           cityId: String? = null, platform: Platform, featured: Boolean? = null): Page<News> {
+	           cityId: String? = null, platform: Platform, featured: Boolean? = null, archive: Boolean? = null): Page<News> {
 
 		val filter = SpecificationHelper<News>()
 				.with("partner" to partnerId?.let { partnerModel.getById(it) })
@@ -104,8 +104,11 @@ class NewsModel(
 		}
 
 		filter.where(PlatformFeaturedSpecificationHelper.getFeaturedFilters(platform, featured, showHidden))
-		if (showHidden != true) {
+
+		if (actual) {
 			filter.where { root, _, cb -> cb.gt(root["endDate"], System.currentTimeMillis()) }
+		} else if (archive == true) {
+			filter.where { root, _, cb -> cb.lt(root["endDate"], System.currentTimeMillis()) }
 		}
 
 		return filter.sort(if (sort != null) Sort.Direction.DESC else Sort.Direction.ASC, (sort
