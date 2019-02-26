@@ -20,9 +20,9 @@ class MailBroadcast(
 	override var id: String = IDGenerator.longId()
 
 	@ManyToMany
-	var cities: List<City> = listOf()
+	var cities: MutableList<City> = mutableListOf()
 	@ManyToMany
-	var regions: List<Region> = listOf()
+	var regions: MutableList<Region> = mutableListOf()
 
 
 	@ManyToOne

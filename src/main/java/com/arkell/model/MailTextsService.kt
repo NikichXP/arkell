@@ -75,10 +75,10 @@ class MailTextsService(
 			this.gender = gender
 			this.category = category?.let { categoryModel.getById(it) }
 			cities?.let {
-				this.cities = geoModel.cityOps.getByIds(it)
+				this.cities = geoModel.cityOps.getByIds(it).toMutableList()
 			}
 			regions?.let {
-				this.regions = geoModel.regionOps.getByIds(it)
+				this.regions = geoModel.regionOps.getByIds(it).toMutableList()
 			}
 		}
 
@@ -102,10 +102,10 @@ class MailTextsService(
 		gender?.let { this.gender = it }
 
 		cities?.let {
-			this.cities = geoModel.cityOps.getByIds(it)
+			this.cities = geoModel.cityOps.getByIds(it).toMutableList()
 		}
 		regions?.let {
-			this.regions = geoModel.regionOps.getByIds(it)
+			this.regions = geoModel.regionOps.getByIds(it).toMutableList()
 		}
 
 		if (date != null && date < configService.getParam("mail-scheduler", "msg.lastCheck", "0").toLong()) {
