@@ -1,5 +1,7 @@
 package com.arkell.entity
 
+import com.arkell.entity.geo.City
+import com.arkell.entity.geo.Region
 import com.arkell.util.IDGenerator
 import javax.persistence.*
 
@@ -18,6 +20,11 @@ class SpecialProject : VisibleSaveable() {
 
 	var startDate: Long = System.currentTimeMillis()
 	var endDate: Long = System.currentTimeMillis()
+
+	@ManyToMany
+	var cities = mutableListOf<City>()
+	@ManyToMany
+	var regions = mutableListOf<Region>()
 
 	@ManyToOne
 	var category: Category? = null

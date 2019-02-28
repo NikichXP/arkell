@@ -16,14 +16,17 @@ class AdminSpecialProjectAPI(
 		private val specialProjectModel: SpecialProjectModel) {
 
 	@PostMapping("/create")
-	fun create(@RequestParam priority: Int?, @RequestParam categoryId: String?, request: HttpServletRequest): SpecialProject {
-		return specialProjectModel.create(priority = priority, categoryId = categoryId, data = request.getParamData())
+	fun create(@RequestParam priority: Int?, @RequestParam categoryId: String?, @RequestParam cities: List<String>?,
+	           @RequestParam regions: List<String>?, request: HttpServletRequest): SpecialProject {
+		return specialProjectModel.create(priority = priority, categoryId = categoryId,
+				cities = cities, regions = regions, data = request.getParamData())
 	}
 
 	@PostMapping("/data")
-	fun setOffersAndPartners(@RequestParam id: String, @RequestParam partners: Array<String>?,
-	                         @RequestParam offers: Array<String>?): SpecialProject {
-		return specialProjectModel.setPartnersAndOffers(id, partners, offers)
+	fun setData(@RequestParam id: String, @RequestParam partners: Array<String>?,
+	            @RequestParam offers: Array<String>?, @RequestParam cities: List<String>?,
+	            @RequestParam regions: List<String>?): SpecialProject {
+		return specialProjectModel.setData(id, partners, cities = cities, regions = regions, offers = offers)
 	}
 
 	@PostMapping("/partner/add")

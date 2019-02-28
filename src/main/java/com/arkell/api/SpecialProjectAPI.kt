@@ -27,10 +27,10 @@ class SpecialProjectAPI(
 	fun list(@RequestParam showHidden: Boolean?, @RequestParam showInactive: Boolean?, @RequestParam page: Int,
 	         @RequestParam pageSize: Int?, @RequestParam sort: String?, @RequestParam title: String?,
 	         @RequestParam platform: Platform?, @RequestParam rangeFrom: Long?, @RequestParam rangeTo: Long?,
-	         @RequestParam featured: Boolean?): Page<SpecialProject> {
+	         @RequestParam featured: Boolean?, @RequestParam cityId: String?, @RequestParam regionId: String?): Page<SpecialProject> {
 		return specialProjectModel.list(showHidden = showHidden, page = page, title = title, showInactive = showInactive,
 				pageSize = pageSize ?: 20, sort = sort, platform = platform ?: Platform.app, featured = featured,
-				range = rangeFrom?.let { it..rangeTo!! })
+				range = rangeFrom?.let { it..rangeTo!! }, cityId = cityId, regionId = regionId)
 	}
 
 	@GetMapping("/url/{url}")

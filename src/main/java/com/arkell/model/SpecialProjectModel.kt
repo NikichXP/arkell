@@ -22,21 +22,25 @@ class SpecialProjectModel(
 		@Lazy
 		private val offerModel: OfferModel,
 		@Lazy
-		private val partnerModel: PartnerModel) : UpdateAction<SpecialProject>() {
+		private val partnerModel: PartnerModel,
+		private val geoModel: GeoModel) : UpdateAction<SpecialProject>() {
 
-	fun create(priority: Int?, categoryId: String?, data: Map<String, String> = mapOf()): SpecialProject =
+	fun create(priority: Int?, categoryId: String?, data: Map<String, String> = mapOf(), regions: List<String>?,
+	           cities: List<String>?): SpecialProject =
 			repository.save(SpecialProject().apply {
 				ObjectFromMapUpdater(this, data).exclude(*Excludes.default).modify()
 				this.priority = priority ?: 20
+				cities?.let { this.cities = geoModel.cityOps.getByIds(it).toMutableList() }
+				regions?.let { this.regions = geoModel.regionOps.getByIds(it).toMutableList() }
 				category = categoryId?.let { categoryModel.getById(it) }
 			})
 
 	fun list(showHidden: Boolean? = null, page: Int, pageSize: Int, sort: String? = null, offerId: String? = null,
 	         title: String? = null, showInactive: Boolean? = null, platform: Platform, range: LongRange?,
-	         featured: Boolean? = null): Page<SpecialProject> {
+	         featured: Boolean? = null, cityId: String? = null, regionId: String? = null): Page<SpecialProject> {
 
 		val filter = SpecificationHelper<SpecialProject>()
-			.textIgnoreCase("title", title)
+				.textIgnoreCase("title", title)
 
 		filter.where(PlatformFeaturedSpecificationHelper.getFeaturedFilters(platform, featured, showHidden))
 		if (showHidden != true) {
@@ -54,6 +58,14 @@ class SpecialProjectModel(
 				cb.and(cb.lt(root.get<Long>("startDate"), System.currentTimeMillis()),
 						cb.gt(root.get<Long>("endDate"), System.currentTimeMillis()))
 			}
+		}
+
+		cityId?.let {
+			filter.where { root, _, cb -> cb.isMember(geoModel.cityOps.getById(it), root.get("cities")) }
+		}
+
+		regionId?.let {
+			filter.where { root, _, cb -> cb.isMember(geoModel.regionOps.getById(it), root.get("regions")) }
 		}
 
 		offerId?.let {
@@ -101,9 +113,12 @@ class SpecialProjectModel(
 		it.offerList.remove(offerId)
 	}
 
-	fun setPartnersAndOffers(id: String, partners: Array<String>?, offers: Array<String>?) = edit(id) {
+	fun setData(id: String, partners: Array<String>?, offers: Array<String>?, regions: List<String>?,
+	            cities: List<String>?) = edit(id) {
 		partners?.let { this.partnerList = it.map { partnerModel.getById(it) }.map { it.id }.toMutableList() }
 		offers?.let { this.offerList = it.map { offerModel.getById(it) }.map { it.id }.toMutableList() }
+		cities?.let { this.cities = geoModel.cityOps.getByIds(it).toMutableList() }
+		regions?.let { this.regions = geoModel.regionOps.getByIds(it).toMutableList() }
 	}
 
 	fun removePartnerFromEverything(partnerId: String) {
