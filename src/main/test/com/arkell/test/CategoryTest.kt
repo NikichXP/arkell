@@ -1,12 +1,10 @@
 package com.arkell.test
 
-import com.arkell.entity.exception.ElementNotFoundException
 import com.arkell.model.CategoryModel
 import com.arkell.repo.CategoryRepo
 import org.junit.FixMethodOrder
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.runners.MethodSorters
 import org.springframework.beans.factory.annotation.Autowired
