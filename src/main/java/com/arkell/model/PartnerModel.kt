@@ -246,7 +246,7 @@ class PartnerModel(
 
 	fun getCitiesWithPartner(partnerId: String): Set<City> {
 		return geoModel.objectLocationOps.findByPartner(partnerId)
-				.map { it.places.first().parentCity }.toSet()
+				.map { it.cityId }.filterNotNull().map { geoModel.cityOps.getById(it) }.toSet()
 	}
 
 	// TODO Online-shop, no points, no offers
@@ -394,8 +394,6 @@ class PartnerModel(
 
 		println("Migrate Partner end, done: $ctr")
 	}
-
-
 
 
 }
