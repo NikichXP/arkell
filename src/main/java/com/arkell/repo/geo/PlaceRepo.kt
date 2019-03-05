@@ -14,6 +14,7 @@ interface PlaceRepo : JpaRepository<Place, String>, JpaSpecificationExecutor<Pla
 	fun findByParentCity(city: City): List<Place>
 	fun findByParentCityParentRegion(region: Region): List<Place>
 	fun findByNameIgnoreCaseAndParentCity(name: String, city: City): Place?
+	fun findByNameIgnoreCase(name: String): List<Place>
 	fun findByNameContaining(string: String): List<Place>
 	fun findByIsReal(isReal: Boolean): List<Place>
 

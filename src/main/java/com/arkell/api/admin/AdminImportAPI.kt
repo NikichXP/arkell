@@ -9,6 +9,7 @@ import com.arkell.model.*
 import com.arkell.model.file.FileModel
 import com.arkell.repo.MailSubscriptionRepo
 import com.arkell.util.SheetsModelProxy
+import com.arkell.util.randomOrNull
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import kotlinx.coroutines.experimental.Job
@@ -186,7 +187,7 @@ class AdminImportAPI(
 					}.forEach {
 						try {
 							launch {
-								val place = places.getById(it[1])
+								val place = places.findByName(it[1]).randomOrNull() ?: places.getById(it[1])
 
 								val x = it[13].toDoubleOrNull()
 								val y = it[14].toDoubleOrNull()
