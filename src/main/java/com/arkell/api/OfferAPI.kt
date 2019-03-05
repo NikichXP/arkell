@@ -115,13 +115,15 @@ class OfferAPI(
 
 			val sum = pageResult.map { if (it.isBig == true) 4 else 1 }.sum()
 
+			var breaking = false
 			if (pageResult.size < (pageSize ?: 20) + addition) {
-				break
+				breaking = true
 			}
 
+			println("Sum is $sum, addition is ${4 - (sum % 4)}")
 			addition += 4 - (sum % 4)
 
-		} while (sum % 4 != 0)
+		} while (sum % 4 != 0 || !breaking)
 
 		return pageResult
 	}
