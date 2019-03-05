@@ -114,6 +114,11 @@ class OfferAPI(
 					cardType = cardType)
 
 			val sum = pageResult.map { if (it.isBig == true) 4 else 1 }.sum()
+
+			if (pageResult.size < (pageSize ?: 20) + addition) {
+				break
+			}
+
 			addition += 4 - (sum % 4)
 
 		} while (sum % 4 != 0)
