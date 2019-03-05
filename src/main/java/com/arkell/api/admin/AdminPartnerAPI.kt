@@ -52,7 +52,7 @@ class AdminPartnerAPI(
 	}
 
 	@PostMapping("/online")
-	fun setOnlinePoints(@RequestParam partnerId: String, @RequestParam cities: List<String>): ResponseEntity<*> {
+	fun setOnlinePoints(@RequestParam partnerId: String, @RequestParam cities: List<String>): Partner {
 		return partnerModel.setOnlinePoints(partnerId, cities)
 	}
 
