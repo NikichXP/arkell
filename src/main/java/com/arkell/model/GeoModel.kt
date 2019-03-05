@@ -161,6 +161,23 @@ class ObjectLocationOps(
 		return ret
 	}
 
+	fun findByPartner(id: String): List<ObjectLocation> {
+		val filter = SpecificationHelper<ObjectLocation>()
+
+		filter.where { root, _, cb ->
+			cb.equal(root.get<String>("partnerId"), id)
+		}
+
+		return filter.resultUnPaged(repository)
+	}
+
+	fun createUnRealLocation(partnerId: String, place: Place) {
+		val location = ObjectLocation(place)
+		location.partnerId = partnerId
+		location.updateIds()
+		repository.save(location)
+	}
+
 }
 
 @Service

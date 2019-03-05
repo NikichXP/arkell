@@ -64,13 +64,13 @@ class PartnerModel(
 
 	fun createPartner(data: Map<String, String> = mapOf(), discountCategory: String, cityId: String?): Partner {
 		val partner = Partner()
-			.apply {
-				id = ordinalIDGetter.getByTable("partner").toString()
-				mainCategory = categoryModel.getById(discountCategory)
-				categories.add(mainCategory!!)
+				.apply {
+					id = ordinalIDGetter.getByTable("partner").toString()
+					mainCategory = categoryModel.getById(discountCategory)
+					categories.add(mainCategory!!)
 
-				city = cityId?.let { geoModel.cityOps.getById(it) }
-			}
+					city = cityId?.let { geoModel.cityOps.getById(it) }
+				}
 
 		ObjectFromMapUpdater(partner, data).exclude(*Excludes.default).modify()
 
@@ -107,8 +107,8 @@ class PartnerModel(
 
 	fun editContactPerson(partnerId: String, personId: String, data: Map<String, String>) = edit(partnerId) {
 		ObjectFromMapUpdater(this.contactPersons.find { it.id == personId }!!, data)
-			.exclude(*Excludes.default)
-			.modify()
+				.exclude(*Excludes.default)
+				.modify()
 	}
 
 	fun removeContactPerson(partnerId: String, personId: String) = edit(partnerId) {
@@ -116,7 +116,7 @@ class PartnerModel(
 	}
 
 	fun getPartnerLocations(partnerId: String): List<ObjectLocation> = getById(partnerId)
-		.locations.map { geoModel.objectLocationOps.getById(it) }
+			.locations.map { geoModel.objectLocationOps.getById(it) }
 
 	fun deletePartnerLocation(partnerId: String, locationId: String) = edit(partnerId) {
 		locations.remove(locationId) //.removeIf { it.id == locationId }
@@ -227,6 +227,20 @@ class PartnerModel(
 	fun makePartnerUnGlobal(partnerId: String) = update(partnerId) {
 		geoModel.objectLocationOps.deleteServiceLocations(partnerId)
 		it.isGlobal = false
+	}
+
+	fun setOnlinePoints(partnerId: String, cities: List<String>) = update(partnerId) {
+		val locations = geoModel.objectLocationOps.findByPartner(it.id)
+
+		locations.filter { point -> point.isReal != true && !cities.any { it == point.cityId } }
+				.forEach { location -> launch { geoModel.objectLocationOps.deleteById(location.id) } }
+
+		geoModel.cityOps
+				.getByIds(cities.minus(locations.map { it.cityId }.filterNotNull().toSet()))
+				.map { geoModel.placeOps.findAnyUnRealPlace(it) }
+				.forEach {
+					geoModel.objectLocationOps.createUnRealLocation(partnerId, it)
+				}
 	}
 
 	// TODO Online-shop, no points, no offers
@@ -374,5 +388,6 @@ class PartnerModel(
 
 		println("Migrate Partner end, done: $ctr")
 	}
+
 
 }

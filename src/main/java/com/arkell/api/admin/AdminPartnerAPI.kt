@@ -51,6 +51,11 @@ class AdminPartnerAPI(
 		return if (status) partnerModel.makeGlobalPartner(id) else partnerModel.makePartnerUnGlobal(id)
 	}
 
+	@PostMapping("/online")
+	fun setOnlinePoints(@RequestParam partnerId: String, @RequestParam cities: List<String>): ResponseEntity<*> {
+		return partnerModel.setOnlinePoints(partnerId, cities)
+	}
+
 	@GetMapping("/submit/list")
 	fun submitList(): List<PartnerSubmit> {
 		return partnerModel.listSubmits()
