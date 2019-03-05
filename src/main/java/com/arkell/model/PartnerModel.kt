@@ -4,6 +4,7 @@ import com.arkell.entity.Category
 import com.arkell.entity.Partner
 import com.arkell.entity.exception.CustomExceptionCode
 import com.arkell.entity.exception.ElementNotFoundException
+import com.arkell.entity.geo.City
 import com.arkell.entity.geo.ObjectLocation
 import com.arkell.entity.geo.Place
 import com.arkell.entity.interaction.PartnerSubmit
@@ -243,6 +244,11 @@ class PartnerModel(
 				}
 	}
 
+	fun getCitiesWithPartner(partnerId: String): Set<City> {
+		return geoModel.objectLocationOps.findByPartner(partnerId)
+				.map { it.places.first().parentCity }.toSet()
+	}
+
 	// TODO Online-shop, no points, no offers
 	fun filterPartners(
 			categories: Array<String>? = null, cityId: String?, placeId: String? = null, regionId: String? = null, title: String?,
@@ -388,6 +394,8 @@ class PartnerModel(
 
 		println("Migrate Partner end, done: $ctr")
 	}
+
+
 
 
 }

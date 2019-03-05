@@ -3,6 +3,7 @@ package com.arkell.api.admin
 import com.arkell.entity.Partner
 import com.arkell.entity.auth.Auth
 import com.arkell.entity.auth.AuthPermission
+import com.arkell.entity.geo.City
 import com.arkell.entity.interaction.PartnerSubmit
 import com.arkell.model.PartnerModel
 import com.arkell.util.Ret
@@ -54,6 +55,11 @@ class AdminPartnerAPI(
 	@PostMapping("/online")
 	fun setOnlinePoints(@RequestParam partnerId: String, @RequestParam cities: List<String>): Partner {
 		return partnerModel.setOnlinePoints(partnerId, cities)
+	}
+
+	@GetMapping("/cities")
+	fun getPartnerCities(@RequestParam partnerId:String): Set<City> {
+		return partnerModel.getCitiesWithPartner(partnerId)
 	}
 
 	@GetMapping("/submit/list")
