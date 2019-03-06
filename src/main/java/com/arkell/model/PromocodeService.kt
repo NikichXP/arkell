@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentSkipListSet
 class PromocodeService(
 		val offerModel: OfferModel,
 		val mailService: MailService,
+		val partnerModel: PartnerModel,
 		override val repository: PromocodeRepo) : UpdateAction<Promocode>() {
 
 	val offerIds = ConcurrentSkipListSet<String>()
@@ -71,11 +72,11 @@ class PromocodeService(
 		val offer = offerModel.getById(offerId)
 
 		val entities = codes
-			.map { Promocode(it, offer.id) }
-			.onEach {
-				it.isPublic = isPublic
-				it.partnerId = offer.partnerId
-			}
+				.map { Promocode(it, offer.id) }
+				.onEach {
+					it.isPublic = isPublic
+					it.partnerId = offer.partnerId
+				}
 
 		if (entities.size < 500) {
 			repository.saveAll(entities)
@@ -199,18 +200,19 @@ class PromocodeService(
 		}.toInt()
 	}
 
-	@Throws(CustomExceptionCode::class)
 	fun sendToMail(mail: String, offerId: String): String {
 		val code = getAndClaimCode(offerId = offerId, mail = mail)
 		val offer = offerModel.getById(offerId)
-		mailService.sendMail("Ваш промокод", getPromocodeText(offer.title, code.id), mail)
+		val partner = partnerModel.getById(offer.partnerId)
+		mailService.sendMail("Ваш промокод", getPromocodeText(offer.title, code.id, partner.url ?: partner.id), mail)
 		return "ok"
 	}
 
-	private fun getPromocodeText(title: String, code: String): String {
+	private fun getPromocodeText(title: String, code: String, link: String): String {
 		return File(System.getProperty("user.dir") + "/mail-promocode.html").readLines()
-			.reduce { a, b -> a + b }
-			.replace("{{КОМПАНИЯ}}", title)
-			.replace("{{ПРОМОКОД}}", code)
+				.reduce { a, b -> a + b }
+				.replace("{{КОМПАНИЯ}}", title)
+				.replace("{{ПРОМОКОД}}", code)
+				.replace("{{URL}}", link)
 	}
 }
