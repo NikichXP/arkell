@@ -410,7 +410,7 @@ class PlaceOps(
 		cb.equal(root.get<City>("parentCity"), city)
 	}.random()
 
-	fun findByName(placeName: String) = repository.findByName(placeName)
+	fun findByName(placeName: String) = repository.findByNameIgnoreCase(placeName)
 
 	fun findByName(placeName: String, cityName: String): Place {
 		val cities = cityOps.findByName(cityName)

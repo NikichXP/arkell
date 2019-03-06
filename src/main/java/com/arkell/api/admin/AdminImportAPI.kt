@@ -187,7 +187,7 @@ class AdminImportAPI(
 					}.forEach {
 						try {
 							launch {
-								val place = places.findByName(it[1]).randomOrNull() ?: places.getById(it[1])
+								val place = places.findByName(it[1]).firstOrNull() ?: places.getById(it[1])
 
 								val x = it[13].toDoubleOrNull()
 								val y = it[14].toDoubleOrNull()
@@ -209,8 +209,10 @@ class AdminImportAPI(
 									addressString = it[11].nullIfEmpty()
 									contactInfo = it[12].nullIfEmpty()
 
-									it[15].nullIfEmpty()?.let {
-										marker = it
+									if (it.size > 15) {
+										it[15].nullIfEmpty()?.let {
+											marker = it
+										}
 									}
 
 									geoModel.objectLocationOps.save(this)
