@@ -17,6 +17,7 @@ class ObjectLocation() : Saveable() {
 	constructor(place: Place, point: GeoPoint = place.point) : this() {
 		this.place = place
 		this.point = point
+		this.places.add(place)
 	}
 
 	constructor(place: Place) : this(place, place.point)
