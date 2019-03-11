@@ -226,7 +226,7 @@ class FileModel(
 
 	fun uploadPart(part: Part): Deferred<String> {
 		val fileExt = part.submittedFileName.substringAfterLast('.')
-		val fileName = UUID.randomUUID().toString() + "" + fileExt
+		val fileName = UUID.randomUUID().toString() + '.' + fileExt
 		return async(context) {
 			fileSystem.putObject(fileName, part.inputStream)
 			return@async fileName
